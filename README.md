@@ -11,7 +11,7 @@ En esta tarea se implementa una red neuronal simple. La cual es capaz de predeci
 
 * Resultados
 
-![alt text](https://github.com/vicho08/CC5114/tarea_1/images/resultados.png "Resultados dataset iris")
+![alt text](https://github.com/vicho08/CC5114/tree/tarea_1/images/resultados.png "Resultados dataset iris")
 
 
 
