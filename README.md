@@ -5,12 +5,14 @@
 
 En esta tarea se implementa una red neuronal simple. La cual es capaz de predecir un valor a partir de un input, y también aprender (ajustar parámetros) a partir del error entre el valor de salida y el esperado. Se ocupo la red con un dataset real: iris, el cual posee tres clases. Se presentan gráficos de error y accuracy durante el entrenamiento de la red. 
 
+Se incluye archivo Tarea_1.py y Tarea_1.ipynb donde se realizaron experimentos.
+
 * Librerías utilizadas
-* * random 
-* * math
-* * matplotlib
-* * pandas: para cargar el dataset.
-* * sklearn: para partición dataset en training y test.
+    * random 
+    * math
+    * matplotlib
+    * pandas: para cargar el dataset.
+    * sklearn: para partición dataset en training y test.
 
 * Dificultades encontradas
 
