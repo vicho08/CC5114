@@ -2,15 +2,20 @@
 # coding: utf-8
 
 # # Tarea 1: Entrenar una red Neuronal
-# Nombre: Vicente Illanes
+# Autor: Vicente Illanes
 
 # # Parte 1: Neuronas
 
-# In[222]:
+# In[1]:
 
 
 import random
 import numpy as np
+import matplotlib.pyplot as plt
+import math
+import pandas as pd
+from random import seed
+from sklearn.model_selection import train_test_split
 
 #Clase Perceptron
 class Neuron:
@@ -20,11 +25,11 @@ class Neuron:
     def __init__(self, num_w, fun):
         ws = []
         for i in range(num_w):
-            v = round(random.random(),4)
-            ws.append(-1 + (2*v)) #valores entre -1 y 1
+            v = -1 + 2*random.random()
+            ws.append(v) #valores entre -1 y 1
         self.w= ws
-        b =random.random()
-        self.b = -2 + (4*b)
+        b =-1 + 2*random.random()
+        self.b = b
         self.f = fun
         self.delta = 0.0
         
@@ -75,7 +80,7 @@ class Neuron:
         return self.f.derivate(output)
     
     def setDelta(self, value):
-        self.delta = self.delta + value
+        self.delta = value
         
     def getDelta(self):
         return self.delta 
@@ -88,7 +93,7 @@ class Neuron:
 
 # # Parte 2: Capas de Neuronas
 
-# In[223]:
+# In[2]:
 
 
 
@@ -121,9 +126,8 @@ class NeuronLayer:
         return self.list_neurons
     
            
-           
-    
-    
+          
+   
     
         
 
@@ -131,7 +135,18 @@ class NeuronLayer:
             
 
 
-# In[271]:
+# In[3]:
+
+
+def MSE(y_pred, y, N, safe=True):
+    sum = 0.0
+    if safe:
+        for i in range(len(y_pred)):
+            sum += (y_pred[i]-y[i])**2
+    return sum/N 
+
+
+# In[82]:
 
 
 
@@ -142,83 +157,135 @@ class NeuronNetwork:
         
         self.layers =[]
         for i in range(0, num_layers):
-   if(i == num_layers-1):
-       self.layers.append(NeuronLayer(list_neuron[-1], y_size, list_functions[-1]))
-   else:
-       self.layers.append(NeuronLayer(layers[i], layers[i+1], list_functions[i]))
+            if(i == num_layers-1):
+                self.layers.append(NeuronLayer(list_neuron[-1], y_size, list_functions[-1]))
+            else:
+                self.layers.append(NeuronLayer(layers[i], layers[i+1], list_functions[i]))
          
     
     def feed(self, x):
         h = x
         for i in range(len(self.layers)):
-   h = self.layers[i].feed(h)
+            h = self.layers[i].feed(h)
         return h
     
     def backpropagation(self, y):
         network = self.layers
         for i in reversed(range(len(network))):
-   layer = network[i]
-   neurons = layer.getNeurons()
-   if i != len(network)-1: 
-       #Caso Hidden Layer
-       for j in range(len(neurons)):
-           error = 0.0
-           for neuron in network[i+1].getNeurons():
-               error += (neuron.get_w(j) * neuron.getDelta())
-           neuron = neurons[j]
-           output = neuron.getOutput()
-           neuron.setDelta(error * neuron.transferDerivate(output))
-   else: 
-       #Caso OutputLayer
-       for j in range(len(neurons)):
-           neuron = neurons[j]
-           output = neuron.getOutput()
-           error =(y[j] - output)
-           neuron.setDelta(error * neuron.transferDerivate(output))        
+            layer = network[i]
+            neurons = layer.getNeurons()
+            if i != len(network)-1: 
+                #Caso Hidden Layer
+                for j in range(len(neurons)):
+                    error = 0.0
+                    for neuron in network[i+1].getNeurons():
+                        error += (neuron.get_w(j) * neuron.getDelta())
+                    neuron = neurons[j]
+                    output = neuron.getOutput()
+                    neuron.setDelta(error * neuron.transferDerivate(output))
+            else: 
+                #Caso OutputLayer
+                for j in range(len(neurons)):
+                    neuron = neurons[j]
+                    output = neuron.getOutput()
+                    error =(y[j] - output)
+                    neuron.setDelta(error * neuron.transferDerivate(output))        
    
+   #Actualiza parametros de la red
     def update_parameters(self, x, lr):
         network= self.layers
         inputs = x
         for i in range(len(network)):
-   neurons = network[i].getNeurons()
-   outputs = []
-   for neuron in neurons:
-       weights = neuron.getW()
-       for j in range(len(weights)):
-           neuron.set_w(j, lr * neuron.getDelta() * inputs[i])
-           neuron.setBias(lr * neuron.getDelta())
-       
-       output = neuron.getOutput()
-       outputs.append(output)
-   inputs = outputs
-   
+            neurons = network[i].getNeurons()
+            outputs = []
+            for neuron in neurons:
+                weights = neuron.getW()
+                for j in range(len(weights)):
+                    neuron.set_w(j, lr * neuron.getDelta() * inputs[j])
+                    neuron.setBias(lr * neuron.getDelta())
+                output = neuron.getOutput()
+                outputs.append(output)
+            inputs = outputs
+    
+    #funcion que interpreta de que clase es el output de la red (en este caso se escoge el maximo)
+    def max(self, output):
+        max =-1
+        j= -1
+        for i in range(len(output)):
+            if output[i] > max:
+                max = output[i]
+                j = i
+        y_pred = [0, 0, 0]
+        y_pred[j]=1
+        return y_pred
+    
+    #funcion que compara el valor esperado con el obtenido
+    def equal(self, y_pred, y):
+        for i in range(len(y_pred)):
+            if y_pred[i]!=y[i]:
+                return False
+        return True
+    
     def train_network(self, inputs, expected, lr, n_epoch, safe=True):
+        self.errors = []
+        self.acc = []
+        self.epochs = n_epoch
         for epoch in range(n_epoch):
-   sum_error = 0.0
-   for i in range(1):
-       outputs = self.feed(inputs[i])
-       max = -1
-       j=-1
-       y_real =[0, 0, 0]
-       y_real[expected[i][0]]=1                
-       for i in range(len(y_real)):
-           if safe:
-               sum_error += (y_real[i]-outputs[i])**2
+            sum_error = 0.0
+            acc = 0
+            for i in range(len(inputs)):
+                output = self.feed(inputs[i])
+                y_pred = self.max(output)
+                y_real =[0, 0, 0]
+                y_real[expected[i][0]]=1                
+                sum_error += MSE(output, y_real, len(inputs))
+                self.backpropagation(y_real)
+                self.update_parameters(inputs[i], lr)
+                if self.equal(y_pred, y_real): acc +=1
+            acc = (acc/len(inputs))*100
+            self.errors.append(sum_error)
+            self.acc.append(acc)
+            print('>epoch=%d, lrate=%.3f, error=%.3f, acc=%.3f' % (epoch, lr, sum_error, acc))
    
-       self.backpropagation(y_real)
-       self.update_parameters(x, lr)
-   print('>epoch=%d, lrate=%.3f, error=%.3f' % (epoch, lr, sum_error/len(inputs)))
-           
+   
+    def predecir(self, X_test, y_test):
+        sum_error = 0.0
+        acc = 0.0
+        for i in range(len(X_test)):
+           y_pred = self.feed(X_test[i])
+           y_pred = self.max(y_pred)
+           y_real =[0, 0, 0]
+           y_real[y_test[i][0]]=1                
+           sum_error += MSE(y_pred, y_real, len(X_test))
+           if self.equal(y_pred, y_real): acc +=1
+        acc = (acc/len(X_test))*100
+        print('error=%.3f, acc=%.3f' % (sum_error, acc))
+        
+    def plot_error(self):       
+        plt.plot(self.errors)
+        plt.axis([0, self.epochs, 0, 1])
+        plt.suptitle('Porcentaje de error por época')
+        plt.xlabel("época")
+        plt.ylabel('error %')
+        plt.show()
+  
+    def plot_acc(self):
+        plt.plot(self.acc)
+        plt.axis([0, self.epochs, 0, 100])
+        plt.suptitle('Porcentaje de accuracy por época')
+        plt.xlabel("época")
+        plt.ylabel('accuracy %')
+        plt.show()
+        
    
 
 
 
 # # Funciones de Activación
 
-# In[272]:
+# In[83]:
 
 
-import math
 #función escalon
 class Step:
     def apply(self, x):
@@ -229,11 +296,11 @@ class Step:
 
 #funcion sigmoid
 class Sigmoid :
-    def apply (self, x):
+    def apply(self, x):
         return 1 / (1 + math.exp(-x))
 
-    def derivate (self, x):
-        return self.apply(x) * (1 - self.apply (x))
+    def derivate(self, x):
+        return self.apply(x) * (1 - self.apply(x))
     
 class Tanh:
     def apply(self, x):
@@ -247,10 +314,8 @@ class Tanh:
 
 # ### Carga de datos, normalización y one hot encoding
 
-# In[273]:
+# In[84]:
 
-
-import pandas as pd
 data = pd.read_csv('iris.data', sep=",")
 data.columns = ["sepal length","sepal width", "petal length", "petal width", "class"]
 data["class"] = data["class"].map(lambda x: 0 if x =="Iris-setosa" else 1 if x == "Iris-versicolour" else 2 if x == "Iris-virginica" else -1)
@@ -267,38 +332,37 @@ Y = data_normalized[["class"]]
         
 
 
-# In[274]:
+# In[85]:
 
-
-from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=.25, random_state=13, stratify=Y)
 
 
-# In[275]:
-
+# In[86]:
 
 step = Step()
 sigmoid = Sigmoid()
 tanh = Tanh()
-red =NeuronNetwork(4,[10, 5, 5],4,3, [sigmoid , tanh , sigmoid, sigmoid ])    
+seed(1)
+red =NeuronNetwork(4,[10, 5, 5],4,3, [tanh , tanh ,sigmoid , sigmoid])    
 
 
-# In[276]:
+# In[87]:
 
 
 batch = X_train.values.tolist()
 expected = y_train.values.tolist()
-red.train_network(batch, expected, 0.1, 15)
+red.train_network(batch, expected, 0.1, 20)
 
 
-# In[277]:
+# In[88]:
 
 
-red.feed(batch[0])
+X_test = X_test.values.tolist()
+y_test = y_test.values.tolist()
+
+red.predecir(X_test, y_test)
 
 
-# In[ ]:
-
-
-
-
+# In[90]:
+red.plot_error()
+red.plot_acc()
