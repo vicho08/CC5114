@@ -10,7 +10,6 @@
 
 
 import random
-import numpy as np
 import matplotlib.pyplot as plt
 import math
 import pandas as pd
@@ -226,7 +225,12 @@ class NeuronNetwork:
                 return False
         return True
     
-    def train_network(self, inputs, expected, lr, n_epoch, safe=True):
+    #función de entrenamiento de la red
+    #se usa el error cuadratico medio para ir registrando el error total por época
+    #inputs: batch de ejemplos
+    #lr: learning rate
+    #n_epoch: numero de épocas
+    def train(self, inputs, expected, lr, n_epoch):
         self.errors = []
         self.acc = []
         self.epochs = n_epoch
@@ -247,7 +251,8 @@ class NeuronNetwork:
             self.acc.append(acc)
             print('>epoch=%d, lrate=%.3f, error=%.3f, acc=%.3f' % (epoch, lr, sum_error, acc))
    
-   
+   #Predicción de red para un conjunto de prueba
+   #imprime porcentaje de error y acierto
     def predecir(self, X_test, y_test):
         sum_error = 0.0
         acc = 0.0
@@ -351,7 +356,7 @@ red =NeuronNetwork(4,[10, 5, 5],4,3, [tanh , tanh ,sigmoid , sigmoid])
 
 batch = X_train.values.tolist()
 expected = y_train.values.tolist()
-red.train_network(batch, expected, 0.1, 20)
+red.train(batch, expected, 0.1, 20)
 
 
 # In[88]:
