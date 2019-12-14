@@ -13,7 +13,10 @@ Se incluye archivo Tarea_3.py y Tarea_3.ipynb donde se realizaron experimentos.
     * string
     * matplotlib
     * math
-    
+
+* Función de Fitness: 
+    Esta función -|x - g| + g, donde x es la evaluación del program y g el valor el objetivo. Cumple que su valor máximo es cuando x = g, lo cual es útil al ahora de interpretar la calidad de un programa. Se decidió ocupar el maximo entre el valor de esta función y el 0 para que no hayan valores muy negativos. 
+
 * Ejercicios 
     * Se usaron como código base los archivos proporcionados por el equipo docente en Ucursos: arboles.py, para la representación de arboles y ast.py para generar programas al azar.
 
@@ -46,13 +49,12 @@ Estos son los resultados obtenidos para heatmap cambiando el tamaño de la pobla
 ![alt text](https://github.com/vicho08/CC5114/blob/master/tarea3/images/pop_size.png "Heatmap: population size")
 ![alt text](https://github.com/vicho08/CC5114/blob/master/tarea3/images/mutation_rate.png "Heatmap: mutation rate")
 
-Podemos observar que en el caso del tamaño de la población el mayor decrecimiento en el tiempo se observa entre los 50-200. Sin embargo los mejores resultados se observan alrededor del tamaño 800. esto se debe que mientras mayor sea el tamaño de la poblacion, es más probable que al crear un individuo en la etapa inicial tenga mayores coincidencias con la palabra objetivo.
+Podemos observar que en el caso del tamaño de la población el mayor decrecimiento en el tiempo se observa entre los 300-400 individios. Se observa que despues de 400 individuos se obtienen resultados rápidamente. 
 
-Para el caso de la tasa de mutación, observamos que más allá de el valor 0.2 el algoritmo no alcanza a encontrar una respuesta antes de las generaciones impuestas. Esto se debe a que se esta permitiendo demasiada diversidad en los individuos con lo que se podría estar perdiendo información ganada sobre la palabra objetivo en generaciones pasadas.
-
-Como reflexión final, es interesate ver como problemas de optimización pueden ser automatizados usando algoritmos genéticos. Pero hay que tener en cuenta que si la función `fitness` o la creación de individuos es demasiado compleja el algoritmo puede ser costosa en tiempo y recursos. Además, para problemas que no se conoce un resultado correcto a priori, como Unbound Knapsack,  para saber si una respuesta es buena se debe comparar con otras respuestas, por lo que no se sabe un criterio para definir un objetivo específico ya que no se conoce la solución. 
+Para el caso de la tasa de mutación, se observa que entre los valores 0.2 y 0.3 hay decaimiento en el tiempo en el tiempo que necesita. Se observan valores muy variados esto se puede deber a la probabilidad que impide a un árbol seguir cresiendo cuando este se crea. (en el proceso de mutación se realiza un crossover entre el individuo y un árbol generado al azar)
+ 
 ```python
-genetic_algorithm(pop_size=50, fitness=fitness, generate_gen=generate_char, generate_ind=generate_word, elite=10, mutationRate=0.15, generations=200, goal= "helloworld")
+genetic_algorithm(250, lambda a, b: fitness_repetion(a,b,ast), ast, 10, mutationRate=i, generations=100, deep= 2, goal=375, heatmap=True)
 ```
 
 
